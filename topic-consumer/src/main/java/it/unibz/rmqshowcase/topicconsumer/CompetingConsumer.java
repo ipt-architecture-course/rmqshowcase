@@ -1,8 +1,8 @@
 package it.unibz.rmqshowcase.topicconsumer;
 
 import com.rabbitmq.client.*;
-import it.unibz.rmqshowcase.rabbitmq.ChannelConfigurer;
-import it.unibz.rmqshowcase.rabbitmq.ConnectionManager;
+import it.unibz.rmqshowcase.rabbitmq.RabbitMQ;
+import it.unibz.rmqshowcase.rabbitmq.RemoteServerConnectionConfig;
 import it.unibz.rmqshowcase.rabbitmq.Consumer;
 
 import java.io.IOException;
@@ -14,14 +14,14 @@ public class CompetingConsumer {
     private static final String QUEUE_NAME = "task_queue";
 
     public static void main(String[] args) throws IOException, TimeoutException {
-        ConnectionManager connectionManager = new ConnectionManager();
-        connectionManager.configure("localhost", "admin", "admin");
-        connectionManager.connect();
-
+        RemoteServerConnectionConfig config = new RemoteServerConnectionConfig("localhost", "admin", "admin");
         String bindingKey = "task.#";
-        ChannelConfigurer channelConfigurer = new ChannelConfigurer(connectionManager);
-        channelConfigurer.declareTopic(EXCHANGE_NAME);
-        channelConfigurer.bindDurableQueue(QUEUE_NAME, bindingKey);
+
+        RabbitMQ rabbitMQ = RabbitMQ.get();
+        rabbitMQ.configure(config);
+        rabbitMQ.connect();
+        rabbitMQ.declareTopic(EXCHANGE_NAME);
+        rabbitMQ.bindDurableQueue(QUEUE_NAME, bindingKey);
 
         System.out.println("Waiting for messages...");
 
@@ -29,7 +29,7 @@ public class CompetingConsumer {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
             System.out.printf("Received message: '%s' with routing key '%s'%n", message, delivery.getEnvelope().getRoutingKey());
         };
-        Consumer consumer = channelConfigurer.createConsumer(deliverCallback);
+        Consumer consumer = rabbitMQ.createConsumer(deliverCallback);
         consumer.run();
     }
 }
