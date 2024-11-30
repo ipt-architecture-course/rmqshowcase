@@ -29,7 +29,7 @@ public class ConnectionManager implements Connector, Configurable<RemoteServerCo
 
     @Override
     public void connect() throws IOException, TimeoutException {
-        if (this.connection == null || this.connection.isOpen()) return;
+        if (this.connection != null && this.connection.isOpen()) return;
 
         this.connection = this.factory.newConnection();
         this.channel = this.connection.createChannel();
