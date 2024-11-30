@@ -1,11 +1,10 @@
 package it.unibz.rmqshowcase.topicproducer;
 
-import com.rabbitmq.client.BuiltinExchangeType;
-import com.rabbitmq.client.Channel;
+import it.unibz.rmqshowcase.topicproducer.rabbitmq.ChannelConfigurer;
 import it.unibz.rmqshowcase.topicproducer.rabbitmq.ConnectionManager;
+import it.unibz.rmqshowcase.topicproducer.rabbitmq.Producer;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
 
 public class TopicPublisher {
@@ -15,13 +14,15 @@ public class TopicPublisher {
         ConnectionManager connectionManager = new ConnectionManager();
         connectionManager.configure("localhost", "admin", "admin");
         connectionManager.connect();
-        Channel channel = connectionManager.getChannel();
 
-        channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
+        ChannelConfigurer channelConfigurer = new ChannelConfigurer(connectionManager);
+        channelConfigurer.declareTopic(EXCHANGE_NAME);
+        Producer producer = channelConfigurer.createProducer();
+
         String routingKey = "task.urgent";
         String message = "This is an urgent task";
 
-        channel.basicPublish(EXCHANGE_NAME, routingKey, null, message.getBytes(StandardCharsets.UTF_8));
+        producer.send(message, routingKey);
         System.out.printf("Published message: '%s' with routing key '%s'%n", message, routingKey);
 
         connectionManager.disconnect();
