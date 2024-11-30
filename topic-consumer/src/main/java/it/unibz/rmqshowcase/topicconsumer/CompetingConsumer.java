@@ -1,6 +1,9 @@
 package it.unibz.rmqshowcase.topicconsumer;
 
 import com.rabbitmq.client.*;
+import it.unibz.rmqshowcase.rabbitmq.ChannelConfigurer;
+import it.unibz.rmqshowcase.rabbitmq.ConnectionManager;
+import it.unibz.rmqshowcase.rabbitmq.Consumer;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -11,33 +14,22 @@ public class CompetingConsumer {
     private static final String QUEUE_NAME = "task_queue";
 
     public static void main(String[] args) throws IOException, TimeoutException {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
-        factory.setUsername("admin");
-        factory.setPassword("admin");
+        ConnectionManager connectionManager = new ConnectionManager();
+        connectionManager.configure("localhost", "admin", "admin");
+        connectionManager.connect();
 
-        try {
-            Connection connection = factory.newConnection();
-            Channel channel = connection.createChannel();
+        String bindingKey = "task.#";
+        ChannelConfigurer channelConfigurer = new ChannelConfigurer(connectionManager);
+        channelConfigurer.declareTopic(EXCHANGE_NAME);
+        channelConfigurer.bindDurableQueue(QUEUE_NAME, bindingKey);
 
-            channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
-            channel.queueDeclare(QUEUE_NAME, true, false, false, null);
+        System.out.println("Waiting for messages...");
 
-            String bindingKey = "task.#";
-            channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, bindingKey);
-
-            System.out.println("Waiting for messages...");
-
-            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-                String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
-                System.out.printf("Received message: '%s' with routing key '%s'%n", message, delivery.getEnvelope().getRoutingKey());
-            };
-
-            channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {});
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (TimeoutException e) {
-            throw new RuntimeException(e);
-        }
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
+            System.out.printf("Received message: '%s' with routing key '%s'%n", message, delivery.getEnvelope().getRoutingKey());
+        };
+        Consumer consumer = channelConfigurer.createConsumer(deliverCallback);
+        consumer.run();
     }
 }

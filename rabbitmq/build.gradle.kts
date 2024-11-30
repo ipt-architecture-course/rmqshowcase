@@ -2,7 +2,7 @@ plugins {
     id("java")
 }
 
-group = "it.unibz.rmqshocase.topicconsumer"
+group = "it.unibz.rmqshocase.rabbitmq"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -10,7 +10,6 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":rabbitmq"))
     implementation("com.rabbitmq:amqp-client:5.18.0")
     implementation("ch.qos.logback:logback-classic:1.4.11")
 

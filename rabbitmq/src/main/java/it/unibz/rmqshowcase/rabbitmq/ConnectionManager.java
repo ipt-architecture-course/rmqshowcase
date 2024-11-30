@@ -1,4 +1,4 @@
-package it.unibz.rmqshowcase.topicproducer.rabbitmq;
+package it.unibz.rmqshowcase.rabbitmq;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;

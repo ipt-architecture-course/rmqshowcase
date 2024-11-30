@@ -1,8 +1,8 @@
 package it.unibz.rmqshowcase.topicproducer;
 
-import it.unibz.rmqshowcase.topicproducer.rabbitmq.ChannelConfigurer;
-import it.unibz.rmqshowcase.topicproducer.rabbitmq.ConnectionManager;
-import it.unibz.rmqshowcase.topicproducer.rabbitmq.Producer;
+import it.unibz.rmqshowcase.rabbitmq.ChannelConfigurer;
+import it.unibz.rmqshowcase.rabbitmq.ConnectionManager;
+import it.unibz.rmqshowcase.rabbitmq.Producer;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
