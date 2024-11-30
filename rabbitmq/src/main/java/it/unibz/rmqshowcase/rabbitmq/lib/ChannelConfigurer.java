@@ -6,25 +6,26 @@ import com.rabbitmq.client.DeliverCallback;
 import it.unibz.rmqshowcase.rabbitmq.Consumer;
 import it.unibz.rmqshowcase.rabbitmq.Producer;
 import it.unibz.rmqshowcase.rabbitmq.api.channel.ChannelManipulator;
+import it.unibz.rmqshowcase.rabbitmq.api.connection.ChannelProvider;
 import it.unibz.rmqshowcase.rabbitmq.api.pubsub.ConsumerFactory;
 import it.unibz.rmqshowcase.rabbitmq.api.pubsub.ProducerFactory;
 
 import java.io.IOException;
 
 public class ChannelConfigurer implements ChannelManipulator, ProducerFactory, ConsumerFactory {
-    private final ConnectionManager connectionManager;
+    private final ChannelProvider channelProvider;
     private Channel channel;
     private String exchangeName;
     private String queueName;
 
-    public ChannelConfigurer(ConnectionManager connectionManager) {
-        this.connectionManager = connectionManager;
+    public ChannelConfigurer(ChannelProvider channelProvider) {
+        this.channelProvider = channelProvider;
     }
 
     @Override
     public void declareTopic(String exchangeName) throws IOException {
         this.exchangeName = exchangeName;
-        this.channel = this.connectionManager.getChannel();
+        this.channel = this.channelProvider.getChannel();
         this.channel.exchangeDeclare(this.exchangeName, BuiltinExchangeType.TOPIC);
     }
 
